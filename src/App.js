@@ -1,50 +1,47 @@
 import React from 'react';
 //import PropTypes from 'prop-types';
 import axios from "axios";
-import { async } from 'q';
+import Movies from "./Movie";
+import "./App.css"
 
 class App extends React.Component {
   state = {
-    count : 0,
+    movies : [],
     isLoading : true
   }
 
-  plus = () => {
-    this.setState(current => ({count : current.count + 1}));
-    console.log("plus");
-  }
-    
-
-  minus = () => {
-    this.setState(current => ({count : current.count - 1}));
-    console.log("minus");
-  }
-
   getMovies = async() => {
-    const movieLists = await axios.get("https://yts.lt/api/v2/list_movies.json");
+    const {data: {data:{movies}} } = await axios.get("https://yts.lt/api/v2/list_movies.json?sort_by=rating");
+    this.setState({movies:movies, isLoading : false})
   }
 
   componentDidMount() {
     this.getMovies();
-    
-    setTimeout(()=>{
-      this.setState({isLoading:false})
-      }, 5000
-    );
-
   }
 
   render() {
-    const {isLoading} = this.state;
+    const {isLoading, movies} = this.state;
 
     return (
-        <div>
-          {isLoading ? "Loading" : "Ready"}
-          <h1>test {this.state.count}</h1>
-          <button onClick={this.plus}>plus</button>
-          <button onClick={this.minus}>minus</button>
-          
-        </div>
+        <section className="container">
+          {isLoading ? (
+              <div className="loader">
+                <span className="loader-test"> Loading...</span>
+              </div>
+            ): movies.map(movie=>(
+                <Movies 
+                  key={movie.id}
+                  id={movie.id}
+                  year={movie.year}
+                  title={movie.title}
+                  summary={movie.summary}
+                  genres={movie.genres}
+                  large_cover_image={movie.large_cover_image}
+                />
+              )
+            )
+          }
+        </section>
       );
   }
 }
